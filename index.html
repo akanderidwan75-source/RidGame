@@ -1,148 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RidGame</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background: #111;
-      color: white;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-    }
-
-    #game {
-      width: 100vw;
-      height: 100vh;
-      background: linear-gradient(#4b8f29, #1e4d18);
-      position: relative;
-      overflow: hidden;
-    }
-
-    #top {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      right: 10px;
-      display: flex;
-      justify-content: space-between;
-      z-index: 10;
-    }
-
-    .box {
-      background: rgba(0,0,0,.65);
-      padding: 10px 14px;
-      border-radius: 10px;
-    }
-
-    #player {
-      width: 45px;
-      height: 45px;
-      background: #2196f3;
-      border: 3px solid white;
-      border-radius: 50%;
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    .enemy {
-      width: 40px;
-      height: 40px;
-      background: #e53935;
-      border: 3px solid white;
-      border-radius: 50%;
-      position: absolute;
-    }
-
-    #controls {
-      position: absolute;
-      bottom: 25px;
-      left: 20px;
-      display: grid;
-      grid-template-columns: 60px 60px 60px;
-      grid-template-rows: 60px 60px;
-      gap: 5px;
-      z-index: 20;
-    }
-
-    button {
-      border: none;
-      border-radius: 12px;
-      background: rgba(0,0,0,.65);
-      color: white;
-      font-size: 25px;
-      font-weight: bold;
-    }
-
-    button:active {
-      background: #2196f3;
-    }
-
-    #shoot {
-      position: absolute;
-      right: 25px;
-      bottom: 45px;
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      background: #d32f2f;
-      z-index: 20;
-    }
-
-    #startScreen {
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,.85);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-    }
-
-    #startScreen h1 {
-      font-size: 42px;
-      margin-bottom: 10px;
-    }
-
-    #startScreen p {
-      margin-bottom: 25px;
-    }
-
-    #start {
-      padding: 15px 35px;
-      background: #2196f3;
-      font-size: 20px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>RidGame</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101820;font-family:Arial,sans-serif;touch-action:none}
+canvas{display:block;width:100%;height:100%;background:#263b27}
+#menu,#gameover{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:linear-gradient(#071018dd,#101820f5);color:white;z-index:10;text-align:center}
+#gameover{display:none}
+h1{font-size:52px;margin:0 0 8px}
+p{font-size:18px}
+button{border:0;border-radius:12px;padding:16px 35px;font-size:20px;font-weight:bold;background:#e7b52f;color:#111}
+#hud{position:fixed;top:12px;left:12px;right:12px;display:none;justify-content:space-between;color:white;font-weight:bold;font-size:17px;z-index:3}
+.bar{width:140px;height:14px;background:#222;border:1px solid #fff;border-radius:8px;overflow:hidden}
+#health{height:100%;background:#39d353;width:100%}
+#controls{display:none;position:fixed;inset:0;z-index:4;pointer-events:none}
+#joy{position:absolute;left:25px;bottom:25px;width:125px;height:125px;border:2px solid #ffffff55;border-radius:50%;background:#ffffff18;pointer-events:auto}
+#stick{position:absolute;left:37px;top:37px;width:50px;height:50px;border-radius:50%;background:#ffffff66}
+#fire{position:absolute;right:28px;bottom:35px;width:90px;height:90px;border-radius:50%;background:#d33b35cc;color:#fff;font-size:18px;pointer-events:auto}
+#reload{position:absolute;right:135px;bottom:35px;width:75px;height:55px;padding:5px;font-size:14px;pointer-events:auto}
+#cross{position:fixed;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%);z-index:2;pointer-events:none}
+#cross:before,#cross:after{content:"";position:absolute;background:#fff}
+#cross:before{width:22px;height:2px;top:10px}
+#cross:after{width:2px;height:22px;left:10px}
+</style>
 </head>
-
 <body>
 
-<div id="game">
+<canvas id="game"></canvas>
 
-  <div id="top">
-    <div class="box">❤️ HP: <span id="hp">100</span></div>
-    <div class="box">🎯 Score: <span id="score">0</span></div>
-  </div>
+<div id="menu">
+<h1>RIDGAME</h1>
+<p>Battle • Shoot • Survive</p>
+<button id="start">START GAME</button>
+</div>
 
-  <div id="player"></div>
+<div id="gameover">
+<h1>GAME OVER</h1>
+<p id="final"></p>
+<button id="again">PLAY AGAIN</button>
+</div>
 
-  <div id="controls">
-    <div></div>
-    <button id="up">▲</button>
-    <div></div>
+<div id="hud">
+<div>
+<div>HP</div>
+<div class="bar"><div id="health"></div></div>
+</div>
+<div id="ammo">AMMO: 30 / 120</div>
+<div id="kills">KILLS: 0</div>
+</div>
 
-    <button id="left">◀</button>
-    <button id="down">▼</button>
-    <button id="right">▶
+<div id="cross"></div>
+
+<div id="controls">
+<div id="joy"><div id="stick"></div></div>
+<button id="reload">RELOAD</button>
+<button id="fire">FIRE</button>
+</div>
+
+<script>
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+let W,H,dpr;
+function resize(){
+ dpr=Math.min(devicePixelRatio||1,2);
+ W=innerWidth;H=innerHeight;
+ canvas.width=W*dpr;canvas.height=H*dpr;
+ canvas.style.width=W+"px";canvas.style.height=H+"px";
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener("resize",resize);resize();
+
+const menu=document.getElementById("menu");
+const over=document.getElementById("gameover");
+const controls=document.getElementById("controls");
+const hud=document.getElementById("hud");
+const healthBar=document.getElementById("health");
+const ammoText=document.getElementById("ammo");
+const killsText=document.getElementById("kills");
+const finalText=document.getElementById("final");
+
+let running=false,last=0;
+let score=0,ammo=30,reserve=120,reloading=false;
+let camera={x:0,y:0};
+let keys={};
+let mouse={x:W/2,y:H/2,down:false};
+let joy={x:0,y:0,active:false};
+let bullets=[],enemies=[],particles=[],walls=[],loot=[];
+let spawnTimer=0,shootTimer=0;
+
+const world={w:3200,h:2400};
+
+const player={
+ x:world.w/2,y:world.h/2,
+ r:22,speed:270,
+ hp:100,maxHp:100,
+ angle:0
+};
+
+function reset(){
+ score=0;ammo=30;reserve=120;reloading=false;
+ player.x=world.w/2;player.y=world.h/2;player.hp=100;
+ bullets=[];enemies=[];particles=[];loot=[];
+ walls=[];
+ for(let i=0;i<35;i++){
+  let x=150+Math.random()*(world.w-300);
+  let y=150+Math.random()*(world.h-300);
+  if(Math.hypot(x-player.x,y-player.y)<300){i--;continue}
+  walls.push({x,y,w:80+Math.random()*150,h:50+Math.random()*100});
+ }
+ for(let i=0;i<7;i++)spawnEnemy();
+}
+
+function spawnEnemy(){
+ let a=Math.random()*Math.PI*2;
+ let d=600+Math.random()*700;
+ let x=player.x+Math.cos(a)*d,y=player.y+Math.sin(a)*d;
+ x=Math.max(50,Math.min(world.w-50,x));
+ y=Math.max(50,Math.min(world.h-50,y));
+ enemies.push({
+  x,y,r:21,hp:60,maxHp:60,
+  speed:75+Math.random()*35,
+  cooldown:Math.random(),
+  angle:0
+ });
+}
+
+function circleRect(c,r){
+ return c.x+r>r.x&&c.x-r<r.x+r.w&&c.y+r>r.y&&c.y-r<r.y+r.h;
+}
+function blocked(x,y,r){
+ if(x-r<0||y-r<0||x+r>world.w||y+r>world.h)return true;
+ for(const w of walls){
+  if(circleRect({x,y},r,w))return true;
+ }
+ return false;
+}
+function moveEntity(o,dx,dy){
+ if(!blocked(o.x+dx,o.y,o.r))o.x+=dx;
+ if(!blocked(o.x,o.y+dy,o.r))o.y+=dy;
+}
+
+function shoot(){
+ if(!running||reloading||ammo<=0)return;
+ if(shootTimer>0)return;
+ ammo
